@@ -7,16 +7,16 @@
 ## Project Setup
 
 #### Download C program from server with wget command
-```
+```bash
 wget http://www.sci.brooklyn.cuny.edu/~briskman/cisc3350/c_files/prog1.c
 ```
 
 #### Compile C program with gcc command
-```c
+```bash
 gcc -Wall -Wextra -O2 -g -o prog1 prog1.c
 ```
 
 #### Run the C program from its directory
-```
+```bash
 ./prog1
 ```

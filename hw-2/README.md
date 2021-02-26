@@ -7,6 +7,7 @@
 - C library functions
 - The essence of a function: input, process, output
 - Variable vs pointer
+- Command-line arguments 
 
 ## Project Setup
 

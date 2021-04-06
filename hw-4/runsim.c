@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
   char *ptr = buffer;
   char *filepath = buffer;
   char *p_arr[MAX_SIZE];
+  int status;
 
   // convert char arg to int 
   int n_of_proc = atoi(argv[1]);  // assume user input expected value: int 
@@ -33,10 +34,12 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
-  while (fgets(buffer, MAX_SIZE-1, stdin)) {    // EOF check
+  while (fgets(buffer, MAX_SIZE-1, stdin)) {    // EOF and new line check
     if (proc_c == n_of_proc) {
-      wait(NULL);     // wait on child process
-      printf("waited\n");
+      pid_t ret = wait(&status);     // wait on child process
+      if (ret == -1) 
+        perror("wait");
+      printf("Normal termination with exit status = %d\n", WEXITSTATUS(status));
       proc_c -= 1;
     }
 
@@ -64,16 +67,15 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
     else if (pid == 0) {             // inside child
-      printf("Child process with pid %d successfully forked!\n", getpid());
+      printf("Process with pid %d successfully forked!\n", getpid());
       execv(filepath, p_arr);
       proc_c += 1;
     }
 
     // check if any child has terminated
-    int stat;
-    pid_t cpid = waitpid(0, &stat, WNOHANG);  
+    pid_t cpid = waitpid(-1, &status, WNOHANG);  
     if (cpid != 0) {
-      printf("Child process with pid %d: Normal termination with exit status = %d\n", cpid, WEXITSTATUS(stat));
+      printf("Process with pid %d: Normal termination with exit status = %d\n", cpid, WEXITSTATUS(status));
       proc_c -= 1;
     } 
 
@@ -84,10 +86,10 @@ int main(int argc, char *argv[])
   }
 
   // TODO wait on remaining children that are still running
-  int pid, stat;
+  int pid;
   while (proc_c > 0) {
-    if ((pid = waitpid(0, &stat, WNOHANG)) != 0) {
-      printf("Child process with pid %d: Normal termination with exit status = %d\n", pid, WEXITSTATUS(stat));
+    if ((pid = waitpid(-1, &status, WNOHANG)) != 0) {
+      printf("Process with pid %d: Normal termination with exit status = %d\n", pid, WEXITSTATUS(status));
       proc_c -= 1;
     }
   }

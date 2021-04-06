@@ -19,8 +19,8 @@ int main(int argc, char *argv[])
   // int max_proc;
   int proc_c = 0;   // process counter
   char *buffer = (char *) malloc(MAX_SIZE * sizeof(char));
-  char *ptr = buffer;
-  char *filepath = buffer;
+  char *ptr;
+  char *filepath;
   char *p_arr[MAX_SIZE];
   int status;
 
@@ -35,30 +35,36 @@ int main(int argc, char *argv[])
   }
 
   while (fgets(buffer, MAX_SIZE-1, stdin)) {    // EOF and new line check
-    if (proc_c == n_of_proc) {
+    if (proc_c >= n_of_proc) {
       pid_t ret = wait(&status);     // wait on child process
       if (ret == -1) 
         perror("wait");
-      printf("Normal termination with exit status = %d\n", WEXITSTATUS(status));
+      printf("Process with pid %d: Normal termination with exit status = %d\n", ret, WEXITSTATUS(status));
       proc_c -= 1;
     }
 
     // process buffer and create pointers to each arg in buffer
     int count = 1;
+    ptr = buffer;
+    filepath = buffer;
     // set pointers in arr to point at each arguments provided
     while(*ptr != '\n') {
       // found one argument
       if (*ptr == ' ' || *ptr == '\t') {
-        *ptr = '\0';// replace cur char with terminating char
-        p_arr[count] = ++ptr;
+        *ptr = '\0';  // replace empty space/tab with terminating char
+        p_arr[count] = ++ptr;   // current pointer pointing at \0 
         count += 1;
       } 
       else {
         ptr += 1;
       }
     }
-    p_arr[0] = filepath;
+    p_arr[0] = filepath; // set first pointer in pointers array to file path 
     p_arr[count] = NULL; // set last pointer in pointers array to NULL pointer
+    //Test to check if correct args were read into buffer
+    // printf("filepath = %s\n",filepath);
+    // for(char **p = p_arr; *p; p++)
+    //   printf("pointer = %s\n", *p); 
 
     // fork and exec
     pid_t pid = fork(); 
@@ -68,8 +74,8 @@ int main(int argc, char *argv[])
     }
     else if (pid == 0) {             // inside child
       printf("Process with pid %d successfully forked!\n", getpid());
-      execv(filepath, p_arr);
       proc_c += 1;
+      execv(filepath, p_arr);
     }
 
     // check if any child has terminated
@@ -77,15 +83,10 @@ int main(int argc, char *argv[])
     if (cpid != 0) {
       printf("Process with pid %d: Normal termination with exit status = %d\n", cpid, WEXITSTATUS(status));
       proc_c -= 1;
-    } 
-
-    // Test to check if correct args were read into buffer
-    // printf("filepath = %s\n",filepath);
-    // for(char **p = p_arr; *p; p++)
-    //   printf("pointer = %s\n", *p); 
+    }
   }
 
-  // TODO wait on remaining children that are still running
+  // wait on remaining children that are still running
   int pid;
   while (proc_c > 0) {
     if ((pid = waitpid(-1, &status, WNOHANG)) != 0) {
@@ -94,7 +95,7 @@ int main(int argc, char *argv[])
     }
   }
 
-  free(buffer); //free array on heap
+  free(buffer); // free array on heap
 
   return EXIT_SUCCESS;
 }

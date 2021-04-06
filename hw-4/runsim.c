@@ -6,7 +6,7 @@
 
 // define constants
 const int MAX_PROC = 1000;
-const int MAX_SIZE = 1000;
+const int MAX_SIZE = 10000;
 
 int main(int argc, char *argv[]) 
 {

@@ -1,7 +1,8 @@
 #include <stdio.h> // for printf(), fgets()
 #include <stdlib.h> // for type EXIT_FAILURE and atoi()
-#include <sys/types.h>
-#include <unistd.h> // for getpid(), getppid()
+#include <sys/types.h> // for pid_t
+#include <sys/wait.h> // for wait() and waitpid()
+#include <unistd.h> 
 
 // define constants
 const int MAX_PROC = 1000;

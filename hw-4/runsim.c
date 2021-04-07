@@ -25,8 +25,11 @@ int main(int argc, char *argv[])
   int status;
 
   // convert char arg to int 
-  int n_of_proc = atoi(argv[1]);  // assume user input expected value: int 
-  // TODO check for error; wrong type
+  int n_of_proc = atoi(argv[1]);  
+  if (n_of_proc == 0) {
+      perror("Invalid conversion");
+      exit(EXIT_FAILURE);
+  }
 
   // check the number of processes user specified is within allowable bounds
   if (n_of_proc < 1 || n_of_proc > MAX_PROC) {
@@ -34,10 +37,9 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
-  while (fgets(buffer, MAX_SIZE-1, stdin)) {    // EOF and new line check
-    if (proc_c == n_of_proc) {
+  while ((fgets(buffer, MAX_SIZE-1, stdin)) != NULL) {    // EOF and new line check
+    if (proc_c >= n_of_proc) {
       pid_t ret = wait(&status);     // wait on child process
-      printf("Waiting for child pid %d\n",ret);
       if (ret == -1) 
         perror("wait");
       printf("Process with pid %d: Normal termination with exit status = %d\n", ret, WEXITSTATUS(status));
@@ -60,25 +62,24 @@ int main(int argc, char *argv[])
         ptr += 1;
       }
     }
-    p_arr[0] = filepath; // set first pointer in pointers array to file path 
+    *ptr = '\0';   // replace \n with a \0
+    p_arr[0] = filepath + 2; // set first pointer in pointers array to file path without ./
     p_arr[count] = NULL; // set last pointer in pointers array to NULL pointer
-    //Test to check if correct args were read into buffer
-    // printf("filepath = %s\n",filepath);
-    // for(char **p = p_arr; *p; p++)
-    //   printf("pointer = %s\n", *p); 
 
     // fork and exec
     pid_t pid = fork(); 
-    proc_c += 1;                // when I put the statement here, counter works    
-    if (pid == -1) {                 
+    if (pid == -1) {                 // error forking
       perror("Can not fork");
       exit(EXIT_FAILURE);
     }
     else if (pid == 0) {             // inside child
       printf("Process with pid %d successfully forked!\n", getpid());
-      // proc_c += 1;           // why counter does not update?
       execv(filepath, p_arr);
+      perror("execv returned due to an error");
+      exit(EXIT_FAILURE);
     }
+
+    proc_c += 1;  
 
     // check if any child has terminated
     pid_t cpid = waitpid(-1, &status, WNOHANG);  
@@ -91,13 +92,13 @@ int main(int argc, char *argv[])
   // wait on remaining children that are still running
   int pid;
   while (proc_c > 0) {
-    if ((pid = waitpid(-1, &status, WNOHANG)) != 0) {
+    if ((pid = wait(&status)) != 0) {   // block (wait) upon the remaining children without continuing to doing other stuff
       printf("Process with pid %d: Normal termination with exit status = %d\n", pid, WEXITSTATUS(status));
       proc_c -= 1;
     }
   }
 
   free(buffer); // free array on heap
-  printf("SUCCESS!\n");
+
   return EXIT_SUCCESS;
 }

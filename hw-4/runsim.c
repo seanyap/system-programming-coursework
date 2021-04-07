@@ -35,8 +35,9 @@ int main(int argc, char *argv[])
   }
 
   while (fgets(buffer, MAX_SIZE-1, stdin)) {    // EOF and new line check
-    if (proc_c >= n_of_proc) {
+    if (proc_c == n_of_proc) {
       pid_t ret = wait(&status);     // wait on child process
+      printf("Waiting for child pid %d\n",ret);
       if (ret == -1) 
         perror("wait");
       printf("Process with pid %d: Normal termination with exit status = %d\n", ret, WEXITSTATUS(status));
@@ -68,13 +69,14 @@ int main(int argc, char *argv[])
 
     // fork and exec
     pid_t pid = fork(); 
-    if (pid == -1) {                 // error forking
+    proc_c += 1;                // when I put the statement here, counter works    
+    if (pid == -1) {                 
       perror("Can not fork");
       exit(EXIT_FAILURE);
     }
     else if (pid == 0) {             // inside child
       printf("Process with pid %d successfully forked!\n", getpid());
-      proc_c += 1;
+      // proc_c += 1;           // why counter does not update?
       execv(filepath, p_arr);
     }
 
@@ -96,6 +98,6 @@ int main(int argc, char *argv[])
   }
 
   free(buffer); // free array on heap
-
+  printf("SUCCESS!\n");
   return EXIT_SUCCESS;
 }

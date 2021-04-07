@@ -84,7 +84,14 @@ int main(int argc, char *argv[])
     // check if any child has terminated
     pid_t cpid = waitpid(-1, &status, WNOHANG);  
     if (cpid != 0) {
-      printf("Process with pid %d: Normal termination with exit status = %d\n", cpid, WEXITSTATUS(status));
+      if (WIFEXITED(status))
+        printf("Process with pid %d: Normal termination with exit status = %d\n", cpid, WEXITSTATUS(status));
+      if (WIFSIGNALED(status))
+        printf("Process with pid %d: Killed by signal = %d\n", cpid, WTERMSIG(status), WCOREDUMP(status) ? "(dumped core)" : "");
+      if (WIFSTOPPED(status))
+        printf("Process with pid %d: Stopped by signal = %d\n", cpid, WSTOPSIG(status));
+      if (WIFCONTINUED(status))
+        printf("Process with pid %d: Continued\n", cpid);
       proc_c -= 1;
     }
   }
@@ -93,7 +100,14 @@ int main(int argc, char *argv[])
   int pid;
   while (proc_c > 0) {
     if ((pid = wait(&status)) != 0) {   // block (wait) upon the remaining children without continuing to doing other stuff
-      printf("Process with pid %d: Normal termination with exit status = %d\n", pid, WEXITSTATUS(status));
+      if (WIFEXITED(status))
+        printf("Remaining Process with pid %d: Normal termination with exit status = %d\n", pid, WEXITSTATUS(status));
+      if (WIFSIGNALED(status))
+        printf("Remaining Process with pid %d: Killed by signal = %d\n", pid, WTERMSIG(status), WCOREDUMP(status) ? "(dumped core)" : "");
+      if (WIFSTOPPED(status))
+        printf("Reminaing Process with pid %d: Stopped by signal = %d\n", pid, WSTOPSIG(status));
+      if (WIFCONTINUED(status))
+        printf("Process with pid %d: Continued\n", pid);
       proc_c -= 1;
     }
   }

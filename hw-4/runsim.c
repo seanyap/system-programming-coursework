@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
   // convert char arg to int 
   int n_of_proc = atoi(argv[1]);  
   if (n_of_proc == 0) {
-      perror("Invalid conversion");
+      perror("Invalid argument!");
       exit(EXIT_FAILURE);
   }
 

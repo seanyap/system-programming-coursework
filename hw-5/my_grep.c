@@ -101,7 +101,7 @@ void * searchfile (void * filename) {
 
     buff_len = strlen(buffer); 
 
-    if (buffer[MAX_SIZE - 1] != '\0' && buffer[MAX_SIZE - 1] != '\n') {  // this checks if line is longer than the buffer 
+    if (buff_len == MAX_SIZE -1) {  // this checks if line is longer than the buffer 
       perror("Line exceed buffer max allowable size\n");
       exit(EXIT_FAILURE);
     }
